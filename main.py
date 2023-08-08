@@ -13,6 +13,7 @@ if __name__ == '__main__':
     spark = SparkSession \
         .builder \
         .config(conf=spark_conf)\
+        .enableHiveSupport()\
         .getOrCreate()
 
     logger = Log4j(spark)
@@ -57,12 +58,13 @@ if __name__ == '__main__':
 
     logger.info(f'Saving to file...')
     DataWriter(logger=logger,
+               spark=spark,
                df=flight_json_df,
                filepath='data/json/',
                format=JSON,
                mode=OVERWRITE,
                max_records_file=10000,
-               repartition_cols=['OP_CARRIER', 'ORIGIN']).write()
+               repartition_cols=['OP_CARRIER', 'ORIGIN']).write_to_file()
 
     flight_parquet_df = DataReader(logger=logger,
                                    spark=spark,
@@ -76,10 +78,21 @@ if __name__ == '__main__':
     logger.info(f'Saving to file...')
     flight_parquet_repartitioned_df = repart_df(flight_parquet_df,2)
     DataWriter(logger=logger,
+               spark=spark,
                df=flight_parquet_repartitioned_df,
                filepath='data/avro/',
                format=AVRO,
-               mode=OVERWRITE).write()
+               mode=OVERWRITE).write_to_file()
+
+    logger.info(f'Saving to table...')
+    DataWriter(logger=logger,
+               spark=spark,
+               df=flight_parquet_df,
+               db='AIRLINE_DB',
+               mode=OVERWRITE,
+               repartition_cols=['OP_CARRIER', 'ORIGIN'],
+               sort_by=['OP_CARRIER', 'ORIGIN'],
+               bucket_num=5).write_to_table()
 
     logger.info('Application has finished.')
 
