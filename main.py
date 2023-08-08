@@ -1,9 +1,11 @@
 import pyspark
 from pyspark.sql import *
 from lib.logger import Log4j
-from utils import get_spark_config, load_df, count_by_country
+from utils import get_spark_config, load_df, count_by_country, repart_df
 from data_reader import DataReader
+from data_writer import DataWriter
 from constants import *
+
 
 if __name__ == '__main__':
 
@@ -53,14 +55,31 @@ if __name__ == '__main__':
     flight_json_df.show(5)
     logger.info(f'JSON File schema: {flight_json_df.schema.simpleString()}')
 
+    logger.info(f'Saving to file...')
+    DataWriter(logger=logger,
+               df=flight_json_df,
+               filepath='data/json/',
+               format=JSON,
+               mode=OVERWRITE,
+               max_records_file=10000,
+               repartition_cols=['OP_CARRIER', 'ORIGIN']).write()
+
     flight_parquet_df = DataReader(logger=logger,
-                                spark=spark,
-                                file='data/flight*parquet',
-                                format=PARQUET,
-                                mode=DROPMALFORMED,
-                                date_Format='M/d/y').read()
+                                   spark=spark,
+                                   file='data/flight*parquet',
+                                   format=PARQUET,
+                                   mode=DROPMALFORMED,
+                                   date_Format='M/d/y').read()
     flight_parquet_df.show(5)
     logger.info(f'PARQUET File schema: {flight_parquet_df.schema.simpleString()}')
+
+    logger.info(f'Saving to file...')
+    flight_parquet_repartitioned_df = repart_df(flight_parquet_df,2)
+    DataWriter(logger=logger,
+               df=flight_parquet_repartitioned_df,
+               filepath='data/avro/',
+               format=AVRO,
+               mode=OVERWRITE).write()
 
     logger.info('Application has finished.')
 

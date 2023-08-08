@@ -31,3 +31,10 @@ def count_by_country(df):
     '''
     df_grouped_by_country = df.groupBy('Country')
     return df_grouped_by_country.count()
+
+
+def repart_df(df, num):
+    '''
+    Repart the data into the speicified number (num) of parts.
+    '''
+    return df.repartition(num)
