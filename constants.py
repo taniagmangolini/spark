@@ -36,3 +36,10 @@ FAILFAST = 'FAILFAST'
 PERMISSIVE = 'PERMISSIVE'
 DROPMALFORMED = 'DROPMALFORMED'
 OVERWRITE = 'overwrite'
+
+# Apache logs regex
+APACHE_LOG_REGEX = r'^(\S+) (\S+) (\S+) \[([\w:/]+\s[+\-]\d{4})\] "(\S+) (\S+) (\S+)" (\d{3}) (\S+) "(\S+)" "([^"]*)'
+
+# Gender patterns
+FEMALE = r"^f$|f.m|w.m"
+MALE = r"^m$|ma|m.l"

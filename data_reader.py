@@ -1,6 +1,6 @@
 class DataReader(object):
 
-    def __init__(self, logger, spark, file, format, mode, schema= None, date_Format=None, show_header=False):
+    def __init__(self, logger, spark, file, format, mode, schema= None, date_Format=None, show_header=False, sampling_ratio=None):
         self.logger = logger
         self.spark = spark
         self.file = file
@@ -9,6 +9,7 @@ class DataReader(object):
         self.mode = mode
         self.show_header = show_header
         self.date_Format = date_Format
+        self.sampling_ratio = sampling_ratio
 
     def read(self):
         self.logger.info(f'Reading file {self.file}')
@@ -24,6 +25,9 @@ class DataReader(object):
 
         if self.show_header:
             reader.option('header', 'true')
+
+        if self.sampling_ratio:
+            reader.option('samplingRatio', self.sampling_ratio)
 
         if self.date_Format:
             reader.option('dateFormat', 'M/d/y') \
